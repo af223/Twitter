@@ -14,6 +14,7 @@ public class Tweet {
     public String body;
     public String createdAt;
     public User user;
+    public String mediaURL;
 
     // empty constructor for Parceler Library
     public Tweet() {}
@@ -23,6 +24,19 @@ public class Tweet {
         tweet.body = jsonObject.getString("text");
         tweet.createdAt = jsonObject.getString("created_at");
         tweet.user = User.fromJson(jsonObject.getJSONObject("user"));
+
+        if (jsonObject.getJSONObject("entities").has("media")) {
+            JSONArray media = jsonObject.getJSONObject("extended_entities").getJSONArray("media");
+            int i = 0;
+            while (i < media.length()) {
+                if (media.getJSONObject(i).getString("type").equals("photo")) {
+                    tweet.mediaURL = media.getJSONObject(i).getString("media_url_https");
+                    return tweet;
+                }
+                i++;
+            }
+        }
+        tweet.mediaURL = "";
         return tweet;
     }
 
@@ -34,7 +48,4 @@ public class Tweet {
         }
         return tweets;
     }
-
-
-
 }
