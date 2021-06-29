@@ -1,11 +1,5 @@
 package com.codepath.apps.restclienttemplate.models;
 
-import androidx.room.ColumnInfo;
-import androidx.room.Embedded;
-
-import androidx.room.Entity;
-import androidx.room.PrimaryKey;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -13,7 +7,6 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
-@Entity
 public class Tweet {
 
     public String body;
@@ -36,5 +29,7 @@ public class Tweet {
         }
         return tweets;
     }
+
+
 
 }

@@ -1,7 +1,5 @@
 package com.codepath.apps.restclienttemplate.models;
 
-import androidx.room.ColumnInfo;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
