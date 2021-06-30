@@ -63,7 +63,6 @@ public class ComposeActivity extends AppCompatActivity {
                     public void onSuccess(int statusCode, Headers headers, JSON json) {
                         try {
                             Tweet tweet = Tweet.fromJson(json.jsonObject);
-                            Log.i(TAG, "Published tweet says: " + tweet.body);
                             // send message (the tweet) back to parent (TimelineActivity) that tweet was published on Twitter
                             Intent intent = new Intent();
                             intent.putExtra(String.valueOf(R.string.sent_tweet), Parcels.wrap(tweet));
