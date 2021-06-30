@@ -13,6 +13,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Toast;
 
 import com.codepath.apps.restclienttemplate.models.Tweet;
 import com.codepath.asynchttpclient.callback.JsonHttpResponseHandler;
@@ -109,7 +110,8 @@ public class TimelineActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, @Nullable @org.jetbrains.annotations.Nullable Intent data) {
         if (requestCode == REQUEST_CODE && resultCode == RESULT_OK) {
             // get data from intent (tweet)
-            Tweet tweet = Parcels.unwrap(data.getParcelableExtra("tweet"));
+            Toast.makeText(this, "Tweet sent!", Toast.LENGTH_LONG).show();
+            Tweet tweet = Parcels.unwrap(data.getParcelableExtra(String.valueOf(R.string.sent_tweet)));
             //update RV with the tweet
             // modify data source of tweets
             tweets.add(0, tweet);
