@@ -131,6 +131,7 @@ public class TweetsAdapter extends RecyclerView.Adapter<TweetsAdapter.ViewHolder
             tvTime.setText(getRelativeTimeAgo(tweet.createdAt));
             Glide.with(context)
                     .load(tweet.user.profileImageUrl)
+                    .circleCrop()
                     .into(ivProfileImage);
             // if the tweet contains an image/photo, then embed it
             if (!tweet.mediaURL.isEmpty()) {

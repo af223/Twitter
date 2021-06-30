@@ -10,7 +10,7 @@
         app:showAsAction="always" />
     <item
         android:id="@+id/compose"
-        android:icon="@android:drawable/ic_menu_edit"
+        android:icon="@drawable/ic_vector_compose"
         android:title="Compose"
         app:showAsAction="always" />
 </menu>
