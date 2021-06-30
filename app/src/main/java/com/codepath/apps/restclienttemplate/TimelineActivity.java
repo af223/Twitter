@@ -94,7 +94,7 @@ public class TimelineActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(int statusCode, Headers headers, String response, Throwable throwable) {
-                Log.d("DEBUG", "Fetch timeline error: " + throwable.toString());
+                Log.e(TAG, "Fetch timeline error: " + throwable.toString());
             }
         });
     }
@@ -106,14 +106,28 @@ public class TimelineActivity extends AppCompatActivity {
         return true;
     }
 
-    // handles when the user wants to create a new tweet by clicking the Compose button (launch ComposeActivity.java)
+    // handles when a button from the Action Bar is clicked
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.compose:
+                // when the edit/compose button is pressed, launches Compose Activity
+                Intent intent = new Intent(this, ComposeActivity.class);
+                startActivityForResult(intent, REQUEST_CODE);
+                return true;
+
+            case R.id.logout:
+                // when logout is clicked, user is taken back to login screen
+                client.clearAccessToken();
+                finish();
+                break;
+        }
         if (item.getItemId() == R.id.compose) {
             Intent intent = new Intent(this, ComposeActivity.class);
             startActivityForResult(intent, REQUEST_CODE);
             return true;
         }
+
         return super.onOptionsItemSelected(item);
     }
 
@@ -156,12 +170,6 @@ public class TimelineActivity extends AppCompatActivity {
                 Log.e(TAG, "onFailure" + response, throwable);
             }
         });
-    }
-
-    // when the logout button is clicked, the user is lgoged out, and returns to LoginActivity.java
-    public void onLogout(View view) {
-        client.clearAccessToken();
-        finish();
     }
 
 }
