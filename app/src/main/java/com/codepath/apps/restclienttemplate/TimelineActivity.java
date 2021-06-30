@@ -27,6 +27,15 @@ import java.util.List;
 
 import okhttp3.Headers;
 
+/**
+ * This activity displays 25 tweets from the user's timeline, allows the user to refresh their timeline
+ * by pulling down, and calls ComposeActivity.java if the user wants to publish a Tweet.
+ *
+ * If the user has already logged in via Twitter and the OAuth token hasn't expired, then the user
+ * automatically sees this activity upon opening the app. Otherwise, this activity is started once
+ * the user successfully logs in from LoginActivity.java.
+ */
+
 public class TimelineActivity extends AppCompatActivity {
 
     public static final String TAG = "TimelineActivity";
@@ -45,7 +54,7 @@ public class TimelineActivity extends AppCompatActivity {
 
         client = TwitterApp.getRestClient(this);
 
-        // swipe to refresh timeline
+        // pull down to refresh timeline
         swipeContainer = findViewById(R.id.swipeContainer);
         swipeContainer.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override

@@ -1,7 +1,6 @@
 package com.codepath.apps.restclienttemplate;
 
 import android.content.Context;
-import android.telecom.Connection;
 import android.text.format.DateUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -23,17 +22,22 @@ import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Locale;
 
+/**
+ * This adapter is for the Recycler View in TimelineActivity.java, where each view holder within the
+ * Recycler View displays a tweet from the user's timeline. For each tweet, the profile picture,
+ * screen name, tweet text, and relative time that the text was published is displayed.
+ */
+
 public class TweetsAdapter extends RecyclerView.Adapter<TweetsAdapter.ViewHolder> {
 
-    Context context;
-    List<Tweet> tweets;
     private static final int SECOND_MILLIS = 1000;
     private static final int MINUTE_MILLIS = 60 * SECOND_MILLIS;
     private static final int HOUR_MILLIS = 60 * MINUTE_MILLIS;
     private static final int DAY_MILLIS = 24 * HOUR_MILLIS;
     public static String TAG = "TweetAdapter";
+    private final Context context;
+    private final List<Tweet> tweets;
 
-    // Pass in context and list of tweets
     public TweetsAdapter(Context context, List<Tweet> tweets) {
         this.context = context;
         this.tweets = tweets;
@@ -52,10 +56,7 @@ public class TweetsAdapter extends RecyclerView.Adapter<TweetsAdapter.ViewHolder
     // Bind values based on position of element
     @Override
     public void onBindViewHolder(@NonNull @NotNull ViewHolder holder, int position) {
-        // get data at position
         Tweet tweet = tweets.get(position);
-
-        // bind tweet with view holder
         holder.bind(tweet);
     }
 
@@ -64,6 +65,8 @@ public class TweetsAdapter extends RecyclerView.Adapter<TweetsAdapter.ViewHolder
         return tweets.size();
     }
 
+    // get the time that the Tweet was made relative to the current time
+    // time is formatted using shorthand: d for days, h for hours
     public String getRelativeTimeAgo(String rawJsonDate) {
         String twitterFormat = "EEE MMM dd HH:mm:ss ZZZZZ yyyy";
         SimpleDateFormat sf = new SimpleDateFormat(twitterFormat, Locale.ENGLISH);
@@ -98,27 +101,16 @@ public class TweetsAdapter extends RecyclerView.Adapter<TweetsAdapter.ViewHolder
             Log.i(TAG, "getRelativeTimeAgo failed");
             e.printStackTrace();
         }
-
         return "";
-    }
-
-    public void clear () {
-        tweets.clear();
-        notifyDataSetChanged();
-    }
-
-    public void addAll(List<Tweet> list) {
-        tweets.addAll(list);
-        notifyDataSetChanged();
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
 
-        ImageView ivProfileImage;
-        TextView tvBody;
-        TextView tvScreenName;
-        TextView tvTime;
-        ImageView ivTweetImage;
+        private final ImageView ivProfileImage;
+        private final TextView tvBody;
+        private final TextView tvScreenName;
+        private final TextView tvTime;
+        private final ImageView ivTweetImage;
 
         public ViewHolder(@NonNull @NotNull View itemView) {
             super(itemView);
@@ -130,22 +122,19 @@ public class TweetsAdapter extends RecyclerView.Adapter<TweetsAdapter.ViewHolder
         }
 
         public void bind(Tweet tweet) {
-            Log.d(TAG, "Binding tweet at pos: " + getAdapterPosition());
-            Log.d(TAG, "MediaURL: " + tweet.mediaURL);
-            Log.d(TAG, "Author: " + tweet.user.screenName);
             tvBody.setText(tweet.body);
             tvScreenName.setText(tweet.user.screenName);
             tvTime.setText(getRelativeTimeAgo(tweet.createdAt));
             Glide.with(context)
-                 .load(tweet.user.profileImageUrl)
-                 .into(ivProfileImage);
-
+                    .load(tweet.user.profileImageUrl)
+                    .into(ivProfileImage);
+            // if the tweet contains an image/photo, then embed it, else no photo is displayed in tweet
             if (!tweet.mediaURL.isEmpty()) {
                 ivTweetImage.setVisibility(View.VISIBLE);
                 Glide.with(context)
                         .load(tweet.mediaURL)
                         .into(ivTweetImage);
-            }else{
+            } else {
                 ivTweetImage.setVisibility(View.GONE);
             }
         }
