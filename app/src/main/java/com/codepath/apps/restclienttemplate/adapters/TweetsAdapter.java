@@ -1,4 +1,4 @@
-package com.codepath.apps.restclienttemplate;
+package com.codepath.apps.restclienttemplate.adapters;
 
 import android.content.Context;
 import android.text.format.DateUtils;
@@ -8,11 +8,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.codepath.apps.restclienttemplate.R;
+import com.codepath.apps.restclienttemplate.TimelineActivity;
 import com.codepath.apps.restclienttemplate.models.Tweet;
 
 import org.jetbrains.annotations.NotNull;
@@ -47,13 +50,11 @@ public class TweetsAdapter extends RecyclerView.Adapter<TweetsAdapter.ViewHolder
     @NotNull
     @Override
 
-    // For each row, inflate the layout
     public ViewHolder onCreateViewHolder(@NonNull @NotNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(context).inflate(R.layout.item_tweet, parent, false);
         return new ViewHolder(view);
     }
 
-    // Bind values based on position of element
     @Override
     public void onBindViewHolder(@NonNull @NotNull ViewHolder holder, int position) {
         Tweet tweet = tweets.get(position);
@@ -65,7 +66,7 @@ public class TweetsAdapter extends RecyclerView.Adapter<TweetsAdapter.ViewHolder
         return tweets.size();
     }
 
-    // get the time that the Tweet was made relative to the current time
+    // get the time that the Tweet was made relative to the current time;
     // time is formatted using shorthand: d for days, h for hours
     public String getRelativeTimeAgo(String rawJsonDate) {
         String twitterFormat = "EEE MMM dd HH:mm:ss ZZZZZ yyyy";
@@ -98,7 +99,7 @@ public class TweetsAdapter extends RecyclerView.Adapter<TweetsAdapter.ViewHolder
                 return relativeDate;
             }
         } catch (ParseException e) {
-            Log.i(TAG, "getRelativeTimeAgo failed");
+            Toast.makeText(context, "Error: Unable to parse time of tweet", Toast.LENGTH_LONG).show();
             e.printStackTrace();
         }
         return "";
@@ -109,6 +110,7 @@ public class TweetsAdapter extends RecyclerView.Adapter<TweetsAdapter.ViewHolder
         private final ImageView ivProfileImage;
         private final TextView tvBody;
         private final TextView tvScreenName;
+        private final TextView tvHandle;
         private final TextView tvTime;
         private final ImageView ivTweetImage;
 
@@ -117,6 +119,7 @@ public class TweetsAdapter extends RecyclerView.Adapter<TweetsAdapter.ViewHolder
             ivProfileImage = itemView.findViewById(R.id.ivProfileImage);
             tvBody = itemView.findViewById(R.id.tvBody);
             tvScreenName = itemView.findViewById(R.id.tvScreenName);
+            tvHandle = itemView.findViewById(R.id.tvHandle);
             tvTime = itemView.findViewById(R.id.tvTime);
             ivTweetImage = itemView.findViewById(R.id.ivTweetImage);
         }
@@ -124,17 +127,19 @@ public class TweetsAdapter extends RecyclerView.Adapter<TweetsAdapter.ViewHolder
         public void bind(Tweet tweet) {
             tvBody.setText(tweet.body);
             tvScreenName.setText(tweet.user.screenName);
+            tvHandle.setText(tweet.user.name);
             tvTime.setText(getRelativeTimeAgo(tweet.createdAt));
             Glide.with(context)
                     .load(tweet.user.profileImageUrl)
                     .into(ivProfileImage);
-            // if the tweet contains an image/photo, then embed it, else no photo is displayed in tweet
+            // if the tweet contains an image/photo, then embed it
             if (!tweet.mediaURL.isEmpty()) {
                 ivTweetImage.setVisibility(View.VISIBLE);
                 Glide.with(context)
                         .load(tweet.mediaURL)
                         .into(ivTweetImage);
             } else {
+                // no image view if no image in tweet
                 ivTweetImage.setVisibility(View.GONE);
             }
         }

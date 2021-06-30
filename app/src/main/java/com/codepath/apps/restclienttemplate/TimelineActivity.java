@@ -1,20 +1,21 @@
 package com.codepath.apps.restclienttemplate;
 
-import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import com.codepath.apps.restclienttemplate.adapters.TweetsAdapter;
 import com.codepath.apps.restclienttemplate.models.Tweet;
 import com.codepath.asynchttpclient.callback.JsonHttpResponseHandler;
 
@@ -39,18 +40,21 @@ import okhttp3.Headers;
 public class TimelineActivity extends AppCompatActivity {
 
     public static final String TAG = "TimelineActivity";
-    private final int REQUEST_CODE = 20;
+    private static final int REQUEST_CODE = 20;
     private TwitterClient client;
     private RecyclerView rvTweets;
     private List<Tweet> tweets;
     private TweetsAdapter adapter;
     private SwipeRefreshLayout swipeContainer;
 
-    @SuppressLint("ResourceAsColor")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_timeline);
+
+        getSupportActionBar().setDisplayShowHomeEnabled(true);
+        getSupportActionBar().setLogo(R.drawable.ic_launcher_twitter_round);
+        getSupportActionBar().setDisplayUseLogoEnabled(true);
 
         client = TwitterApp.getRestClient(this);
 
@@ -59,13 +63,14 @@ public class TimelineActivity extends AppCompatActivity {
         swipeContainer.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                fetchTimelineAsync(0);
+                fetchTimelineAsync();
             }
         });
-        swipeContainer.setColorSchemeColors(android.R.color.holo_blue_bright,
-                android.R.color.holo_green_light,
-                android.R.color.holo_orange_light,
-                android.R.color.holo_red_light);
+        swipeContainer.setColorSchemeColors(
+                getResources().getColor(android.R.color.holo_blue_bright),
+                getResources().getColor(android.R.color.holo_green_light),
+                getResources().getColor(android.R.color.holo_orange_light),
+                getResources().getColor(android.R.color.holo_red_light));
 
         rvTweets = findViewById(R.id.rvTweets);
         tweets = new ArrayList<>();
@@ -76,9 +81,9 @@ public class TimelineActivity extends AppCompatActivity {
         populateHomeTimeline();
     }
 
-    // when timeline is refreshed (swiped up), this method will send a new request to Twitter
-    // and replace all the old info with the new Twitter response in the adapter
-    private void fetchTimelineAsync(int page) {
+    // when timeline is refreshed (pulled down), this method will send a new request to Twitter
+    // and replace all the old data with the new Twitter response in the adapter
+    private void fetchTimelineAsync() {
         client.getHomeTimeline(new JsonHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Headers headers, JSON json) {
@@ -87,6 +92,7 @@ public class TimelineActivity extends AppCompatActivity {
                     tweets.addAll(Tweet.fromJsonArray(json.jsonArray));
                     adapter.notifyDataSetChanged();
                 } catch (JSONException e) {
+                    Toast.makeText(TimelineActivity.this, "Error: Unable to parse timeline", Toast.LENGTH_LONG).show();
                     e.printStackTrace();
                 }
                 swipeContainer.setRefreshing(false);
@@ -94,6 +100,7 @@ public class TimelineActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(int statusCode, Headers headers, String response, Throwable throwable) {
+                Toast.makeText(TimelineActivity.this, "Error: Unable to refresh timeline", Toast.LENGTH_LONG).show();
                 Log.e(TAG, "Fetch timeline error: " + throwable.toString());
             }
         });
@@ -109,14 +116,16 @@ public class TimelineActivity extends AppCompatActivity {
     // handles when a button from the Action Bar is clicked
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        final int compose = R.id.compose;
+        final int logout = R.id.logout;
         switch (item.getItemId()) {
-            case R.id.compose:
+            case compose:
                 // when the edit/compose button is pressed, launches Compose Activity
                 Intent intent = new Intent(this, ComposeActivity.class);
                 startActivityForResult(intent, REQUEST_CODE);
                 return true;
 
-            case R.id.logout:
+            case logout:
                 // when logout is clicked, user is taken back to login screen
                 client.clearAccessToken();
                 finish();
@@ -137,13 +146,9 @@ public class TimelineActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable @org.jetbrains.annotations.Nullable Intent data) {
         if (requestCode == REQUEST_CODE && resultCode == RESULT_OK) {
-            // get data from intent (tweet)
             Toast.makeText(this, "Tweet sent!", Toast.LENGTH_LONG).show();
             Tweet tweet = Parcels.unwrap(data.getParcelableExtra(String.valueOf(R.string.sent_tweet)));
-            //update RV with the tweet
-            // modify data source of tweets
             tweets.add(0, tweet);
-            // update adapter
             adapter.notifyItemInserted(0);
             rvTweets.smoothScrollToPosition(0);
         }
@@ -167,6 +172,7 @@ public class TimelineActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(int statusCode, Headers headers, String response, Throwable throwable) {
+                Toast.makeText(TimelineActivity.this, "Unable to load timeline", Toast.LENGTH_LONG).show();
                 Log.e(TAG, "onFailure" + response, throwable);
             }
         });

@@ -8,6 +8,7 @@ import org.parceler.Parcel;
 import java.util.ArrayList;
 import java.util.List;
 
+// All exceptions thrown by methods in this class are handled by the caller
 @Parcel
 public class Tweet {
 

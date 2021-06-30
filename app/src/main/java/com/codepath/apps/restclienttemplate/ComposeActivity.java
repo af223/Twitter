@@ -41,6 +41,10 @@ public class ComposeActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_compose);
 
+        getSupportActionBar().setDisplayShowHomeEnabled(true);
+        getSupportActionBar().setLogo(R.drawable.ic_launcher_twitter_round);
+        getSupportActionBar().setDisplayUseLogoEnabled(true);
+
         client = TwitterApp.getRestClient(this);
 
         etCompose = findViewById(R.id.etCompose);
@@ -69,14 +73,14 @@ public class ComposeActivity extends AppCompatActivity {
                             setResult(RESULT_OK, intent);
                             finish();
                         } catch (JSONException e) {
-                            Toast.makeText(ComposeActivity.this, "Tweet not parsed: " + e, Toast.LENGTH_LONG).show();
+                            Toast.makeText(ComposeActivity.this, "Error: Tweet not parsed", Toast.LENGTH_LONG).show();
                             e.printStackTrace();
                         }
                     }
 
                     @Override
                     public void onFailure(int statusCode, Headers headers, String response, Throwable throwable) {
-                        Toast.makeText(ComposeActivity.this, "Tweet not published: " + throwable, Toast.LENGTH_LONG).show();
+                        Toast.makeText(ComposeActivity.this, "Error: Tweet not published", Toast.LENGTH_LONG).show();
                         Log.e(TAG, "onFailure to publish tweet", throwable);
                     }
                 });
