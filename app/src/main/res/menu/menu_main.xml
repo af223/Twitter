@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:android="http://schemas.android.com/apk/res/android"
-
-    >
+    xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
         android:id="@+id/logout"
@@ -13,4 +11,12 @@
         android:icon="@drawable/ic_vector_compose"
         android:title="Compose"
         app:showAsAction="always" />
+
+    <item
+        android:id="@+id/miActionProgress"
+        android:title="Loading..."
+        android:visible="false"
+        android:orderInCategory="100"
+        app:showAsAction="always"
+        app:actionLayout="@layout/action_view_progress" />
 </menu>
