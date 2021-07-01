@@ -25,6 +25,8 @@ import com.codepath.apps.restclienttemplate.models.Tweet;
 import com.codepath.asynchttpclient.callback.JsonHttpResponseHandler;
 
 import org.jetbrains.annotations.NotNull;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.w3c.dom.Text;
 
 import java.text.ParseException;
@@ -187,6 +189,18 @@ public class TweetsAdapter extends RecyclerView.Adapter<TweetsAdapter.ViewHolder
                         public void onFailure(int statusCode, Headers headers, String response, Throwable throwable) {
                             Log.d(TAG, "No retweet: " + throwable);
                             Log.d("WHY:", response);
+                            try {
+                                JSONObject err = new JSONObject(response);
+                                if(err.getJSONArray("errors").getJSONObject(0).getInt("code") == 327) {
+                                    Toast.makeText(context, "Already retweeted", Toast.LENGTH_LONG).show();
+                                } else {
+                                    Toast.makeText(context, "Unable to retweet", Toast.LENGTH_LONG).show();
+                                }
+                            } catch (JSONException e) {
+                                Toast.makeText(context, "Unable to retweet", Toast.LENGTH_LONG).show();
+                                Log.d(TAG, "unable to parse error");
+                                e.printStackTrace();
+                            }
                         }
                     });
                 }
