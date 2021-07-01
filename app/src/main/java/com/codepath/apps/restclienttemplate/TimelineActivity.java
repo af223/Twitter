@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
@@ -42,11 +43,13 @@ public class TimelineActivity extends AppCompatActivity {
 
     public static final String TAG = "TimelineActivity";
     private static final int REQUEST_CODE = 20;
+    public static long max_id;
     private TwitterClient client;
     private RecyclerView rvTweets;
     private List<Tweet> tweets;
     private TweetsAdapter adapter;
     private SwipeRefreshLayout swipeContainer;
+    private EndlessRecyclerViewScrollListener scrollListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,17 +79,54 @@ public class TimelineActivity extends AppCompatActivity {
         rvTweets = findViewById(R.id.rvTweets);
         tweets = new ArrayList<>();
         adapter = new TweetsAdapter(this, tweets);
-        rvTweets.setLayoutManager(new LinearLayoutManager(this));
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
+        rvTweets.setLayoutManager(linearLayoutManager);
+
+        scrollListener = new EndlessRecyclerViewScrollListener(linearLayoutManager) {
+            @Override
+            public void onLoadMore(int page, int totalItemsCount, RecyclerView view) {
+                loadNextDataFromApi(page);
+            }
+        };
+        rvTweets.addOnScrollListener(scrollListener);
+
+
         rvTweets.setAdapter(adapter);
 
         rvTweets.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
 
         populateHomeTimeline();
+
+        Log.d("oldest ID", String.valueOf(max_id));
+    }
+
+    private void loadNextDataFromApi(int offset) {
+        client.loadNextPage(max_id-1, new JsonHttpResponseHandler() {
+            @Override
+            public void onSuccess(int statusCode, Headers headers, JSON json) {
+                try {
+                    tweets.addAll(Tweet.fromJsonArray(json.jsonArray));
+                    //adapter.notifyItemRangeInserted(tweets.size()-26, 25);
+                    adapter.notifyDataSetChanged();
+                } catch (JSONException e) {
+                    Toast.makeText(TimelineActivity.this, "Error: Unable to parse timeline", Toast.LENGTH_LONG).show();
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onFailure(int statusCode, Headers headers, String response, Throwable throwable) {
+                Toast.makeText(TimelineActivity.this, "Error: Unable to refresh timeline", Toast.LENGTH_LONG).show();
+                Log.e(TAG, "Fetch timeline error: " + throwable.toString());
+            }
+        });
+        Log.d("oldest ID", String.valueOf(max_id));
     }
 
     // when timeline is refreshed (pulled down), this method will send a new request to Twitter
     // and replace all the old data with the new Twitter response in the adapter
     private void fetchTimelineAsync() {
+        max_id = 0;
         client.getHomeTimeline(new JsonHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Headers headers, JSON json) {
@@ -160,6 +200,7 @@ public class TimelineActivity extends AppCompatActivity {
 
     // load 25 tweets from the user's Twitter timeline into the RecyclerView on this screen
     private void populateHomeTimeline() {
+        max_id = 0;
         client.getHomeTimeline(new JsonHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Headers headers, JSON json) {

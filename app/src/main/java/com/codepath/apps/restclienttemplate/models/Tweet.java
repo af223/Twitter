@@ -1,5 +1,9 @@
 package com.codepath.apps.restclienttemplate.models;
 
+import android.util.Log;
+
+import com.codepath.apps.restclienttemplate.TimelineActivity;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -16,6 +20,7 @@ public class Tweet {
     public String createdAt;
     public User user;
     public String mediaURL;
+    public long ID;
 
     // empty constructor for Parceler Library
     public Tweet() {}
@@ -25,6 +30,9 @@ public class Tweet {
         tweet.body = jsonObject.getString("text");
         tweet.createdAt = jsonObject.getString("created_at");
         tweet.user = User.fromJson(jsonObject.getJSONObject("user"));
+        tweet.ID = jsonObject.getLong("id_str");
+        TimelineActivity.max_id = tweet.ID;
+        Log.d("TweetID", String.valueOf(tweet.ID));
 
         // checks if tweet contains a photo. If there is one, sets that URL. Empty URL means no photo
         if (jsonObject.getJSONObject("entities").has("media")) {
