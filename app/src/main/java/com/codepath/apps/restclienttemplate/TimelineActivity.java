@@ -180,7 +180,11 @@ public class TimelineActivity extends AppCompatActivity {
             case logout:
                 // when logout is clicked, user is taken back to login screen
                 client.clearAccessToken();
-                finish();
+                Intent i = new Intent(this, LoginActivity.class);
+                // clears all the previous activities, 'starting blank' at login screen again
+                i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(i);
                 break;
         }
         return super.onOptionsItemSelected(item);
