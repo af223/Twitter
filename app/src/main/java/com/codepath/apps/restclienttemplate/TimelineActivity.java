@@ -1,17 +1,14 @@
 package com.codepath.apps.restclienttemplate;
 
 import android.content.Intent;
-import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -43,7 +40,7 @@ import okhttp3.Headers;
 
 public class TimelineActivity extends AppCompatActivity {
 
-    public static final String TAG = "TimelineActivity";
+    private static final String TAG = "TimelineActivity";
     private static final int REQUEST_CODE = 20;
     public static long max_id;
     private TwitterClient client;
@@ -57,7 +54,6 @@ public class TimelineActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //setContentView(R.layout.activity_timeline);
         ActivityTimelineBinding binding = ActivityTimelineBinding.inflate(getLayoutInflater());
         View view = binding.getRoot();
         setContentView(view);
@@ -69,7 +65,6 @@ public class TimelineActivity extends AppCompatActivity {
         client = TwitterApp.getRestClient(this);
 
         // pull down to refresh timeline
-        //swipeContainer = findViewById(R.id.swipeContainer);
         swipeContainer = binding.swipeContainer;
         swipeContainer.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
@@ -84,12 +79,12 @@ public class TimelineActivity extends AppCompatActivity {
                 getResources().getColor(android.R.color.holo_red_light));
 
         rvTweets = binding.rvTweets;
-        //rvTweets = findViewById(R.id.rvTweets);
         tweets = new ArrayList<>();
         adapter = new TweetsAdapter(this, tweets);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
         rvTweets.setLayoutManager(linearLayoutManager);
 
+        // continuously load data for endless scrolling
         scrollListener = new EndlessRecyclerViewScrollListener(linearLayoutManager) {
             @Override
             public void onLoadMore(int page, int totalItemsCount, RecyclerView view) {
@@ -97,25 +92,22 @@ public class TimelineActivity extends AppCompatActivity {
             }
         };
         rvTweets.addOnScrollListener(scrollListener);
-
-
         rvTweets.setAdapter(adapter);
-
         rvTweets.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
 
         populateHomeTimeline();
-
-        Log.d("oldest ID", String.valueOf(max_id));
     }
 
+    // older tweets have lower max_id, sends request for the next 25 most recent tweets from timeline
+    // Twitter responds with the 25 tweets whose ID is no greater than max_id
     private void loadNextDataFromApi(int offset) {
-        client.loadNextPage(max_id-1, new JsonHttpResponseHandler() {
+        // avoid duplicate tweets since max_id is the ID of a currently displayed Tweet
+        client.loadNextPage(max_id - 1, new JsonHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Headers headers, JSON json) {
                 try {
                     tweets.addAll(Tweet.fromJsonArray(json.jsonArray));
-                    //adapter.notifyItemRangeInserted(tweets.size()-26, 25);
-                    adapter.notifyDataSetChanged();
+                    adapter.notifyItemRangeInserted(tweets.size() - TwitterClient.NUM_LOAD_TWEETS - 1, TwitterClient.NUM_LOAD_TWEETS);
                 } catch (JSONException e) {
                     Toast.makeText(TimelineActivity.this, "Error: Unable to parse timeline", Toast.LENGTH_LONG).show();
                     e.printStackTrace();
@@ -125,10 +117,9 @@ public class TimelineActivity extends AppCompatActivity {
             @Override
             public void onFailure(int statusCode, Headers headers, String response, Throwable throwable) {
                 Toast.makeText(TimelineActivity.this, "Error: Unable to refresh timeline", Toast.LENGTH_LONG).show();
-                Log.e(TAG, "Fetch timeline error: " + throwable.toString());
+                Log.e(TAG, "Fetch timeline error: " + response, throwable);
             }
         });
-        Log.d("oldest ID", String.valueOf(max_id));
     }
 
     // when timeline is refreshed (pulled down), this method will send a new request to Twitter
@@ -152,7 +143,7 @@ public class TimelineActivity extends AppCompatActivity {
             @Override
             public void onFailure(int statusCode, Headers headers, String response, Throwable throwable) {
                 Toast.makeText(TimelineActivity.this, "Error: Unable to refresh timeline", Toast.LENGTH_LONG).show();
-                Log.e(TAG, "Fetch timeline error: " + throwable.toString());
+                Log.e(TAG, "Fetch timeline error: " + response, throwable);
             }
         });
     }
@@ -178,10 +169,11 @@ public class TimelineActivity extends AppCompatActivity {
         final int logout = R.id.logout;
         switch (item.getItemId()) {
             case compose:
-                // when the edit/compose button is pressed, launches Compose Activity
+                // when the edit/compose button is pressed, launches Compose Activity\
+                // empty ID and screen name indicates that it's a new tweet, not a reply
                 Intent intent = new Intent(this, ComposeActivity.class);
-                intent.putExtra("ID", "");
-                intent.putExtra("screenname", "");
+                intent.putExtra(String.valueOf(R.string.id), "");
+                intent.putExtra(String.valueOf(R.string.screen_name), "");
                 startActivityForResult(intent, REQUEST_CODE);
                 return true;
 
@@ -191,12 +183,6 @@ public class TimelineActivity extends AppCompatActivity {
                 finish();
                 break;
         }
-        if (item.getItemId() == R.id.compose) {
-            Intent intent = new Intent(this, ComposeActivity.class);
-            startActivityForResult(intent, REQUEST_CODE);
-            return true;
-        }
-
         return super.onOptionsItemSelected(item);
     }
 
@@ -227,7 +213,7 @@ public class TimelineActivity extends AppCompatActivity {
                     adapter.notifyDataSetChanged();
                     hideProgressBar();
                 } catch (JSONException e) {
-                    Log.e(TAG, "Json exception", e);
+                    Toast.makeText(TimelineActivity.this, "Unable to parse tweets", Toast.LENGTH_LONG).show();
                     e.printStackTrace();
                 }
             }

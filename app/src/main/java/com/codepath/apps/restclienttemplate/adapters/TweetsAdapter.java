@@ -19,7 +19,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.codepath.apps.restclienttemplate.ComposeActivity;
 import com.codepath.apps.restclienttemplate.R;
-import com.codepath.apps.restclienttemplate.TimelineActivity;
 import com.codepath.apps.restclienttemplate.TwitterApp;
 import com.codepath.apps.restclienttemplate.models.Tweet;
 import com.codepath.asynchttpclient.callback.JsonHttpResponseHandler;
@@ -27,7 +26,6 @@ import com.codepath.asynchttpclient.callback.JsonHttpResponseHandler;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.w3c.dom.Text;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -49,7 +47,7 @@ public class TweetsAdapter extends RecyclerView.Adapter<TweetsAdapter.ViewHolder
     private static final int HOUR_MILLIS = 60 * MINUTE_MILLIS;
     private static final int DAY_MILLIS = 24 * HOUR_MILLIS;
     private static final int REQUEST_CODE = 20;
-    public static String TAG = "TweetAdapter";
+    private static final String TAG = "TweetAdapter";
     private final Context context;
     private final List<Tweet> tweets;
 
@@ -94,9 +92,9 @@ public class TweetsAdapter extends RecyclerView.Adapter<TweetsAdapter.ViewHolder
                 return "just now";
             } else if (diff < 2 * MINUTE_MILLIS) {
                 return "a minute ago";
-            } else if (diff < 50 * MINUTE_MILLIS) {
+            } else if (diff < 60 * MINUTE_MILLIS) {
                 return diff / MINUTE_MILLIS + " m";
-            } else if (diff < 90 * MINUTE_MILLIS) {
+            } else if (diff < 120 * MINUTE_MILLIS) {
                 return "an hour ago";
             } else if (diff < 24 * HOUR_MILLIS) {
                 return diff / HOUR_MILLIS + " h";
@@ -121,8 +119,8 @@ public class TweetsAdapter extends RecyclerView.Adapter<TweetsAdapter.ViewHolder
 
         private final ImageView ivProfileImage;
         private final TextView tvBody;
+        private final TextView tvName;
         private final TextView tvScreenName;
-        private final TextView tvHandle;
         private final TextView tvTime;
         private final ImageView ivTweetImage;
         private final ImageButton ibReply;
@@ -134,8 +132,8 @@ public class TweetsAdapter extends RecyclerView.Adapter<TweetsAdapter.ViewHolder
             super(itemView);
             ivProfileImage = itemView.findViewById(R.id.ivProfileImage);
             tvBody = itemView.findViewById(R.id.tvBody);
+            tvName = itemView.findViewById(R.id.tvName);
             tvScreenName = itemView.findViewById(R.id.tvScreenName);
-            tvHandle = itemView.findViewById(R.id.tvHandle);
             tvTime = itemView.findViewById(R.id.tvTime);
             ivTweetImage = itemView.findViewById(R.id.ivTweetImage);
             ibReply = itemView.findViewById(R.id.ibReply);
@@ -146,8 +144,8 @@ public class TweetsAdapter extends RecyclerView.Adapter<TweetsAdapter.ViewHolder
 
         public void bind(final Tweet tweet) {
             tvBody.setText(tweet.body);
+            tvName.setText(tweet.user.name);
             tvScreenName.setText(tweet.user.screenName);
-            tvHandle.setText(tweet.user.name);
             tvTime.setText(getRelativeTimeAgo(tweet.createdAt));
             tvRTCount.setText(String.valueOf(tweet.RTCount));
             tvLikeCount.setText(String.valueOf(tweet.likeCount));
@@ -155,6 +153,7 @@ public class TweetsAdapter extends RecyclerView.Adapter<TweetsAdapter.ViewHolder
                     .load(tweet.user.profileImageUrl)
                     .circleCrop()
                     .into(ivProfileImage);
+
             // if the tweet contains an image/photo, then embed it
             if (!tweet.mediaURL.isEmpty()) {
                 ivTweetImage.setVisibility(View.VISIBLE);
@@ -165,40 +164,44 @@ public class TweetsAdapter extends RecyclerView.Adapter<TweetsAdapter.ViewHolder
                 // no image view if no image in tweet
                 ivTweetImage.setVisibility(View.GONE);
             }
+
+            // when reply button is clicked, takes user to same activity as composing tweet
+            // signifies it's a reply by passing along ID and username of tweeter
             ibReply.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     Intent intent = new Intent(context, ComposeActivity.class);
-                    intent.putExtra("ID", String.valueOf(tweet.ID));
-                    intent.putExtra("screenname", tweet.user.screenName);
+                    intent.putExtra(String.valueOf(R.string.id), String.valueOf(tweet.ID));
+                    intent.putExtra(String.valueOf(R.string.screen_name), tweet.user.screenName);
                     ((Activity) context).startActivityForResult(intent, REQUEST_CODE);
                 }
             });
+
+            // when retweet button is clicked, sends post request to Twitter API and handles response accordingly
             ibRetweet.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     TwitterApp.getRestClient(context).retweet(String.valueOf(tweet.ID), new JsonHttpResponseHandler() {
                         @Override
                         public void onSuccess(int statusCode, Headers headers, JSON json) {
-                            Log.d(TAG, "retweeted");
+                            Toast.makeText(context, "Retweeted!", Toast.LENGTH_LONG).show();
                             int ct = Integer.parseInt(tvRTCount.getText().toString());
-                            tvRTCount.setText(String.valueOf(ct+1));
+                            tvRTCount.setText(String.valueOf(ct + 1));
                         }
 
+                        // handles when Twitter API responds with error code 327: message already retweeted
                         @Override
                         public void onFailure(int statusCode, Headers headers, String response, Throwable throwable) {
-                            Log.d(TAG, "No retweet: " + throwable);
-                            Log.d("WHY:", response);
                             try {
                                 JSONObject err = new JSONObject(response);
-                                if(err.getJSONArray("errors").getJSONObject(0).getInt("code") == 327) {
+                                if (err.getJSONArray("errors").getJSONObject(0).getInt("code") == 327) {
                                     Toast.makeText(context, "Already retweeted", Toast.LENGTH_LONG).show();
                                 } else {
                                     Toast.makeText(context, "Unable to retweet", Toast.LENGTH_LONG).show();
                                 }
                             } catch (JSONException e) {
                                 Toast.makeText(context, "Unable to retweet", Toast.LENGTH_LONG).show();
-                                Log.d(TAG, "unable to parse error");
+                                Log.e(TAG, "unable to retweet" + response, throwable);
                                 e.printStackTrace();
                             }
                         }

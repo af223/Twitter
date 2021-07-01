@@ -1,7 +1,5 @@
 package com.codepath.apps.restclienttemplate.models;
 
-import android.util.Log;
-
 import com.codepath.apps.restclienttemplate.TimelineActivity;
 
 import org.json.JSONArray;
@@ -36,7 +34,6 @@ public class Tweet {
         tweet.RTCount = jsonObject.getInt("retweet_count");
         tweet.likeCount = jsonObject.getInt("favorite_count");
         TimelineActivity.max_id = tweet.ID;
-        Log.d("TweetID", String.valueOf(tweet.ID));
 
         // checks if tweet contains a photo. If there is one, sets that URL. Empty URL means no photo
         if (jsonObject.getJSONObject("entities").has("media")) {

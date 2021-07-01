@@ -10,7 +10,6 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.codepath.apps.restclienttemplate.TwitterClient;
 import com.codepath.apps.restclienttemplate.databinding.ActivityComposeBinding;
 import com.codepath.apps.restclienttemplate.models.Tweet;
 import com.codepath.asynchttpclient.callback.JsonHttpResponseHandler;
@@ -42,8 +41,6 @@ public class ComposeActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //setContentView(R.layout.activity_compose);
-
         ActivityComposeBinding binding = ActivityComposeBinding.inflate(getLayoutInflater());
         View view = binding.getRoot();
         setContentView(view);
@@ -56,16 +53,14 @@ public class ComposeActivity extends AppCompatActivity {
 
         etCompose = binding.etCompose;
         btnTweet = binding.btnTweet;
-        //etCompose = findViewById(R.id.etCompose);
-        //btnTweet = findViewById(R.id.btnTweet);
 
-        inReplyTo = getIntent().getStringExtra("screenname");
-        inReplyToID = getIntent().getStringExtra("ID");
+        // if tweet is written in reply, then the screen name of the user was passed in from intent
+        // screen name is autofilled into compose
+        inReplyTo = getIntent().getStringExtra(String.valueOf(R.string.screen_name));
+        inReplyToID = getIntent().getStringExtra(String.valueOf(R.string.id));
         if (!inReplyTo.isEmpty()) {
-            inReplyTo = "@" + inReplyTo;
             etCompose.setText(inReplyTo);
         }
-
         btnTweet.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -97,7 +92,7 @@ public class ComposeActivity extends AppCompatActivity {
                     @Override
                     public void onFailure(int statusCode, Headers headers, String response, Throwable throwable) {
                         Toast.makeText(ComposeActivity.this, "Error: Tweet not published", Toast.LENGTH_LONG).show();
-                        Log.e(TAG, "onFailure to publish tweet", throwable);
+                        Log.e(TAG, "onFailure to publish tweet: " + response, throwable);
                     }
                 });
             }
