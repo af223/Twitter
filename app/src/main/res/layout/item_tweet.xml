@@ -35,6 +35,7 @@
         android:layout_marginTop="2dp"
         android:layout_toEndOf="@+id/ivProfileImage"
         android:autoLink="all"
+        android:textColor="#000000"
         tools:text="A tweet" />
 
     <TextView
@@ -75,9 +76,53 @@
         android:layout_width="30dp"
         android:layout_height="30dp"
         android:layout_below="@+id/ivTweetImage"
-        android:layout_marginStart="0dp"
+        android:layout_marginStart="5dp"
+        android:layout_marginTop="5dp"
         android:layout_toEndOf="@+id/ivProfileImage"
         android:padding="0dp"
         android:scaleType="centerInside"
         app:srcCompat="@drawable/ic_reply_twitter" />
+
+    <ImageButton
+        android:id="@+id/ibRetweet"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_below="@+id/ivTweetImage"
+        android:layout_marginStart="80dp"
+        android:layout_toEndOf="@+id/ibReply"
+        android:padding="0dp"
+        android:layout_marginTop="5dp"
+        android:scaleType="centerInside"
+        app:srcCompat="@drawable/ic_retweet_twitter" />
+
+    <ImageView
+        android:id="@+id/ivLike"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_below="@+id/ivTweetImage"
+        android:layout_toEndOf="@+id/ibRetweet"
+        android:scaleType="centerInside"
+        android:layout_marginStart="80dp"
+        android:padding="0dp"
+        android:layout_marginTop="5dp"
+        app:srcCompat="@drawable/ic_like" />
+
+    <TextView
+        android:id="@+id/tvRTCount"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/ivTweetImage"
+        android:layout_marginTop="10dp"
+        android:layout_toEndOf="@+id/ibRetweet"
+        android:text="TextView" />
+
+    <TextView
+        android:id="@+id/tvLikeCount"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toEndOf="@+id/ivLike"
+        android:layout_below="@+id/ivTweetImage"
+        android:layout_marginTop="10dp"
+        android:text="TextView" />
+
 </RelativeLayout>

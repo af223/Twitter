@@ -21,6 +21,8 @@ public class Tweet {
     public User user;
     public String mediaURL;
     public long ID;
+    public int RTCount;
+    public int likeCount;
 
     // empty constructor for Parceler Library
     public Tweet() {}
@@ -30,7 +32,9 @@ public class Tweet {
         tweet.body = jsonObject.getString("text");
         tweet.createdAt = jsonObject.getString("created_at");
         tweet.user = User.fromJson(jsonObject.getJSONObject("user"));
-        tweet.ID = jsonObject.getLong("id_str");
+        tweet.ID = jsonObject.getLong("id");
+        tweet.RTCount = jsonObject.getInt("retweet_count");
+        tweet.likeCount = jsonObject.getInt("favorite_count");
         TimelineActivity.max_id = tweet.ID;
         Log.d("TweetID", String.valueOf(tweet.ID));
 

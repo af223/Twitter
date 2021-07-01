@@ -20,14 +20,19 @@ import com.bumptech.glide.Glide;
 import com.codepath.apps.restclienttemplate.ComposeActivity;
 import com.codepath.apps.restclienttemplate.R;
 import com.codepath.apps.restclienttemplate.TimelineActivity;
+import com.codepath.apps.restclienttemplate.TwitterApp;
 import com.codepath.apps.restclienttemplate.models.Tweet;
+import com.codepath.asynchttpclient.callback.JsonHttpResponseHandler;
 
 import org.jetbrains.annotations.NotNull;
+import org.w3c.dom.Text;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Locale;
+
+import okhttp3.Headers;
 
 /**
  * This adapter is for the Recycler View in TimelineActivity.java, where each view holder within the
@@ -119,6 +124,9 @@ public class TweetsAdapter extends RecyclerView.Adapter<TweetsAdapter.ViewHolder
         private final TextView tvTime;
         private final ImageView ivTweetImage;
         private final ImageButton ibReply;
+        private final ImageButton ibRetweet;
+        private final TextView tvRTCount;
+        private final TextView tvLikeCount;
 
         public ViewHolder(@NonNull @NotNull View itemView) {
             super(itemView);
@@ -129,6 +137,9 @@ public class TweetsAdapter extends RecyclerView.Adapter<TweetsAdapter.ViewHolder
             tvTime = itemView.findViewById(R.id.tvTime);
             ivTweetImage = itemView.findViewById(R.id.ivTweetImage);
             ibReply = itemView.findViewById(R.id.ibReply);
+            ibRetweet = itemView.findViewById(R.id.ibRetweet);
+            tvRTCount = itemView.findViewById(R.id.tvRTCount);
+            tvLikeCount = itemView.findViewById(R.id.tvLikeCount);
         }
 
         public void bind(final Tweet tweet) {
@@ -136,6 +147,8 @@ public class TweetsAdapter extends RecyclerView.Adapter<TweetsAdapter.ViewHolder
             tvScreenName.setText(tweet.user.screenName);
             tvHandle.setText(tweet.user.name);
             tvTime.setText(getRelativeTimeAgo(tweet.createdAt));
+            tvRTCount.setText(String.valueOf(tweet.RTCount));
+            tvLikeCount.setText(String.valueOf(tweet.likeCount));
             Glide.with(context)
                     .load(tweet.user.profileImageUrl)
                     .circleCrop()
@@ -157,6 +170,25 @@ public class TweetsAdapter extends RecyclerView.Adapter<TweetsAdapter.ViewHolder
                     intent.putExtra("ID", String.valueOf(tweet.ID));
                     intent.putExtra("screenname", tweet.user.screenName);
                     ((Activity) context).startActivityForResult(intent, REQUEST_CODE);
+                }
+            });
+            ibRetweet.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    TwitterApp.getRestClient(context).retweet(String.valueOf(tweet.ID), new JsonHttpResponseHandler() {
+                        @Override
+                        public void onSuccess(int statusCode, Headers headers, JSON json) {
+                            Log.d(TAG, "retweeted");
+                            int ct = Integer.parseInt(tvRTCount.getText().toString());
+                            tvRTCount.setText(String.valueOf(ct+1));
+                        }
+
+                        @Override
+                        public void onFailure(int statusCode, Headers headers, String response, Throwable throwable) {
+                            Log.d(TAG, "No retweet: " + throwable);
+                            Log.d("WHY:", response);
+                        }
+                    });
                 }
             });
         }
