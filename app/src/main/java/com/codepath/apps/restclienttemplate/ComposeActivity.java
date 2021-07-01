@@ -32,6 +32,8 @@ public class ComposeActivity extends AppCompatActivity {
 
     private static final String TAG = "ComposeActivity";
     private static final int MAX_TWEET_LENGTH = 280;
+    private String inReplyTo;
+    private String inReplyToID;
     private EditText etCompose;
     private Button btnTweet;
     private TwitterClient client;
@@ -50,6 +52,13 @@ public class ComposeActivity extends AppCompatActivity {
         etCompose = findViewById(R.id.etCompose);
         btnTweet = findViewById(R.id.btnTweet);
 
+        inReplyTo = getIntent().getStringExtra("screenname");
+        inReplyToID = getIntent().getStringExtra("ID");
+        if (!inReplyTo.isEmpty()) {
+            inReplyTo = "@" + inReplyTo;
+            etCompose.setText(inReplyTo);
+        }
+
         btnTweet.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -62,7 +71,7 @@ public class ComposeActivity extends AppCompatActivity {
                     Toast.makeText(ComposeActivity.this, "Sorry, your tweet is too long", Toast.LENGTH_LONG).show();
                     return;
                 }
-                client.publishTweet(tweetContent, new JsonHttpResponseHandler() {
+                client.publishTweet(tweetContent, inReplyToID, new JsonHttpResponseHandler() {
                     @Override
                     public void onSuccess(int statusCode, Headers headers, JSON json) {
                         try {

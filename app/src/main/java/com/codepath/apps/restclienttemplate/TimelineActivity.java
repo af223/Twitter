@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
@@ -165,6 +166,8 @@ public class TimelineActivity extends AppCompatActivity {
             case compose:
                 // when the edit/compose button is pressed, launches Compose Activity
                 Intent intent = new Intent(this, ComposeActivity.class);
+                intent.putExtra("ID", "");
+                intent.putExtra("screenname", "");
                 startActivityForResult(intent, REQUEST_CODE);
                 return true;
 

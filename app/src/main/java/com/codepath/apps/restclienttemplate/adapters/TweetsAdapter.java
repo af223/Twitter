@@ -1,11 +1,14 @@
 package com.codepath.apps.restclienttemplate.adapters;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.text.format.DateUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -14,6 +17,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.codepath.apps.restclienttemplate.ComposeActivity;
 import com.codepath.apps.restclienttemplate.R;
 import com.codepath.apps.restclienttemplate.TimelineActivity;
 import com.codepath.apps.restclienttemplate.models.Tweet;
@@ -37,6 +41,7 @@ public class TweetsAdapter extends RecyclerView.Adapter<TweetsAdapter.ViewHolder
     private static final int MINUTE_MILLIS = 60 * SECOND_MILLIS;
     private static final int HOUR_MILLIS = 60 * MINUTE_MILLIS;
     private static final int DAY_MILLIS = 24 * HOUR_MILLIS;
+    private static final int REQUEST_CODE = 20;
     public static String TAG = "TweetAdapter";
     private final Context context;
     private final List<Tweet> tweets;
@@ -113,6 +118,7 @@ public class TweetsAdapter extends RecyclerView.Adapter<TweetsAdapter.ViewHolder
         private final TextView tvHandle;
         private final TextView tvTime;
         private final ImageView ivTweetImage;
+        private final ImageButton ibReply;
 
         public ViewHolder(@NonNull @NotNull View itemView) {
             super(itemView);
@@ -122,9 +128,10 @@ public class TweetsAdapter extends RecyclerView.Adapter<TweetsAdapter.ViewHolder
             tvHandle = itemView.findViewById(R.id.tvHandle);
             tvTime = itemView.findViewById(R.id.tvTime);
             ivTweetImage = itemView.findViewById(R.id.ivTweetImage);
+            ibReply = itemView.findViewById(R.id.ibReply);
         }
 
-        public void bind(Tweet tweet) {
+        public void bind(final Tweet tweet) {
             tvBody.setText(tweet.body);
             tvScreenName.setText(tweet.user.screenName);
             tvHandle.setText(tweet.user.name);
@@ -143,6 +150,17 @@ public class TweetsAdapter extends RecyclerView.Adapter<TweetsAdapter.ViewHolder
                 // no image view if no image in tweet
                 ivTweetImage.setVisibility(View.GONE);
             }
+            ibReply.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Intent intent = new Intent(context, ComposeActivity.class);
+                    intent.putExtra("ID", String.valueOf(tweet.ID));
+                    intent.putExtra("screenname", tweet.user.screenName);
+                    ((Activity) context).startActivityForResult(intent, REQUEST_CODE);
+                }
+            });
         }
+
+
     }
 }
