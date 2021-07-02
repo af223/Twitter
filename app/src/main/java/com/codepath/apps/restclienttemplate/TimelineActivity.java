@@ -98,11 +98,11 @@ public class TimelineActivity extends AppCompatActivity {
         populateHomeTimeline();
     }
 
-    // older tweets have lower max_id, sends request for the next 25 most recent tweets from timeline
+    // older tweets have lower IDs; this sends request for the next 25 most recent tweets from timeline
     // Twitter responds with the 25 tweets whose ID is no greater than max_id
     private void loadNextDataFromApi(int offset) {
         // avoid duplicate tweets since max_id is the ID of a currently displayed Tweet
-        client.loadNextPage(max_id - 1, new JsonHttpResponseHandler() {
+        client.getHomeTimeline(max_id - 1, new JsonHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Headers headers, JSON json) {
                 try {
@@ -126,7 +126,7 @@ public class TimelineActivity extends AppCompatActivity {
     // and replace all the old data with the new Twitter response in the adapter
     private void fetchTimelineAsync() {
         max_id = 0;
-        client.getHomeTimeline(new JsonHttpResponseHandler() {
+        client.getHomeTimeline(max_id, new JsonHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Headers headers, JSON json) {
                 try {
@@ -169,7 +169,7 @@ public class TimelineActivity extends AppCompatActivity {
         final int logout = R.id.logout;
         switch (item.getItemId()) {
             case compose:
-                // when the edit/compose button is pressed, launches Compose Activity\
+                // when the edit/compose button is pressed, launches Compose Activity
                 // empty ID and screen name indicates that it's a new tweet, not a reply
                 Intent intent = new Intent(this, ComposeActivity.class);
                 intent.putExtra(String.valueOf(R.string.id), "");
@@ -178,7 +178,6 @@ public class TimelineActivity extends AppCompatActivity {
                 return true;
 
             case logout:
-                // when logout is clicked, user is taken back to login screen
                 client.clearAccessToken();
                 Intent i = new Intent(this, LoginActivity.class);
                 // clears all the previous activities, 'starting blank' at login screen again
@@ -208,7 +207,7 @@ public class TimelineActivity extends AppCompatActivity {
     // load 25 tweets from the user's Twitter timeline into the RecyclerView on this screen
     private void populateHomeTimeline() {
         max_id = 0;
-        client.getHomeTimeline(new JsonHttpResponseHandler() {
+        client.getHomeTimeline(max_id, new JsonHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Headers headers, JSON json) {
                 JSONArray jsonArray = json.jsonArray;
