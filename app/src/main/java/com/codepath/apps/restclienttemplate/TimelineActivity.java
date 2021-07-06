@@ -18,6 +18,8 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import com.codepath.apps.restclienttemplate.adapters.TweetsAdapter;
 import com.codepath.apps.restclienttemplate.databinding.ActivityTimelineBinding;
 import com.codepath.apps.restclienttemplate.models.Tweet;
+import com.codepath.apps.restclienttemplate.network.TwitterApp;
+import com.codepath.apps.restclienttemplate.network.TwitterClient;
 import com.codepath.asynchttpclient.callback.JsonHttpResponseHandler;
 
 import org.json.JSONArray;
